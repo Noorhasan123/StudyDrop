@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ room["room_name"] }} - StudyDrop</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="room-page">
+
+
+    <!-- =========================================
+         ROOM HEADER
+    ========================================== -->
+
+    <div class="room-header">
+
+        <div class="room-title-area">
+
+            <p class="room-label">STUDY ROOM</p>
+
+            <h1>{{ room["room_name"] }}</h1>
+
+            <p class="room-subtitle">
+                Share files, notes and useful links with your group.
+            </p>
+
+        </div>
+
+
+        <div class="room-code-box">
+
+            <span class="room-code-label">ROOM CODE</span>
+
+            <div class="room-code-row">
+
+                <strong>{{ room["room_code"] }}</strong>
+
+                <button
+                    type="button"
+                    class="action-button copy-button"
+                    onclick="copyText('{{ room.room_code }}')">
+
+                    <span>⧉</span>
+                    Copy
+
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button qr-button"
+                    onclick="showRoomQR()">
+
+                    <span>▦</span>
+                    QR
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         EXPIRY
+    ========================================== -->
+
+    <div class="expiry-box">
+
+        {% if room["expires_at"] %}
+
+            <span class="expiry-icon">◷</span>
+
+            <div>
+                <small>Room expires in</small>
+                <strong id="countdown">Calculating...</strong>
+            </div>
+
+            <div
+                id="room-expiry"
+                data-expiry="{{ room['expires_at'] }}"
+                style="display: none;">
+            </div>
+
+        {% else %}
+
+            <span class="expiry-icon">∞</span>
+
+            <div>
+                <small>Room availability</small>
+                <strong>This room has no expiry</strong>
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =========================================
+         UPLOAD RESOURCE
+    ========================================== -->
+
+    <section class="room-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">↑</div>
+
+            <div>
+                <h2>Upload Resource</h2>
+                <p>Share PDFs, PPTs, images and other study files.</p>
+            </div>
+
+        </div>
+
+
+        <div class="upload-card">
+
+            <form
+                method="POST"
+                action="/upload/{{ room['room_code'] }}"
+                enctype="multipart/form-data">
+
+                <input
+                    type="file"
+                    name="file"
+                    required>
+
+                <button type="submit" class="primary-button">
+                    Upload File <span>↑</span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================================
+         SHARED FILES
+    ========================================== -->
+
+    <section class="room-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">□</div>
+
+            <div>
+                <h2>Shared Files</h2>
+                <p>Resources available in this study room.</p>
+            </div>
+
+        </div>
+
+
+        {% if resources %}
+
+            <div class="file-list">
+
+                {% for resource in resources %}
+
+                    <div class="file-card">
+
+                        <div class="file-info">
+
+                            <div class="file-icon">
+                                {% if resource["file_name"].lower().endswith(".pdf") %}
+                                    PDF
+                                {% elif resource["file_name"].lower().endswith(".ppt") or resource["file_name"].lower().endswith(".pptx") %}
+                                    PPT
+                                {% elif resource["file_name"].lower().endswith(".doc") or resource["file_name"].lower().endswith(".docx") %}
+                                    DOC
+                                {% elif resource["file_name"].lower().endswith(".jpg") or resource["file_name"].lower().endswith(".jpeg") or resource["file_name"].lower().endswith(".png") %}
+                                    IMG
+                                {% else %}
+                                    FILE
+                                {% endif %}
+                            </div>
+
+
+                            <div class="resource-text">
+
+                                <strong title="{{ resource['file_name'] }}">
+                                    {{ resource["file_name"] }}
+                                </strong>
+
+                                <small>
+                                    Shared Resource
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="file-actions">
+
+                            <!-- PDF VIEW -->
+                            {% if resource["file_name"].lower().endswith(".pdf") %}
+
+                                <a
+                                    href="{{ url_for('preview_file', room_code=room['room_code'], filename=resource['file_name']) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="action-button preview-button">
+
+                                    <span>◉</span>
+                                    View
+
+                                </a>
+
+                            {% endif %}
+
+
+                            <!-- DOWNLOAD -->
+
+                            <a
+                                href="{{ url_for('download_file', room_code=room['room_code'], filename=resource['file_name']) }}"
+                                class="action-button download-button">
+
+                                <span>↓</span>
+                                Download
+
+                            </a>
+
+
+                            <!-- DELETE -->
+
+                            <form
+                                method="POST"
+                                action="/delete-file/{{ resource['id'] }}/{{ room['room_code'] }}">
+
+                                <button
+                                    type="submit"
+                                    class="delete-button">
+
+                                    <span>×</span>
+                                    Delete
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">□</div>
+
+                <p>No files added yet.</p>
+
+                <small>
+                    Upload a resource to share it with your room.
+                </small>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================
+         SHARED NOTES
+    ========================================== -->
+
+    <section class="room-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">≡</div>
+
+            <div>
+                <h2>Shared Notes</h2>
+                <p>Add important information for everyone in the room.</p>
+            </div>
+
+        </div>
+
+
+        <div class="form-card">
+
+            <form
+                method="POST"
+                action="/add-note/{{ room['room_code'] }}">
+
+                <textarea
+                    name="content"
+                    rows="5"
+                    placeholder="Write your note here..."
+                    required></textarea>
+
+                <button type="submit" class="primary-button">
+                    Add Note <span>+</span>
+                </button>
+
+            </form>
+
+        </div>
+
+
+        {% if notes %}
+
+            <div class="notes-list">
+
+                {% for note in notes %}
+
+                    <div class="note-card">
+
+                        <p class="note-content">
+                            {{ note["content"] }}
+                        </p>
+
+
+                        <div class="card-actions">
+
+                            <button
+                                type="button"
+                                class="action-button copy-button"
+                                onclick="copyText(this.closest('.note-card').querySelector('.note-content').textContent.trim())">
+
+                                <span>⧉</span>
+                                Copy
+
+                            </button>
+
+
+                            <form
+                                method="POST"
+                                action="/delete-note/{{ note['id'] }}/{{ room['room_code'] }}">
+
+                                <button
+                                    type="submit"
+                                    class="delete-button">
+
+                                    <span>×</span>
+                                    Delete
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">≡</div>
+
+                <p>No notes added yet.</p>
+
+                <small>
+                    Add a note to share information with your group.
+                </small>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================
+         SHARED LINKS
+    ========================================== -->
+
+    <section class="room-section">
+
+        <div class="section-heading">
+
+            <div class="section-icon">↗</div>
+
+            <div>
+                <h2>Shared Links</h2>
+                <p>Share useful websites and study resources.</p>
+            </div>
+
+        </div>
+
+
+        <div class="form-card">
+
+            <form
+                method="POST"
+                action="/add-link/{{ room['room_code'] }}">
+
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Link title"
+                    required>
+
+                <input
+                    type="url"
+                    name="url"
+                    placeholder="https://example.com"
+                    required>
+
+                <button type="submit" class="primary-button">
+                    Add Link <span>+</span>
+                </button>
+
+            </form>
+
+        </div>
+
+
+        {% if links %}
+
+            <div class="links-list">
+
+                {% for link in links %}
+
+                    <div class="link-card">
+
+                        <div class="link-info">
+
+                            <div class="link-icon">↗</div>
+
+                            <div>
+
+                                <strong>
+                                    {{ link["title"] }}
+                                </strong>
+
+                                <a
+                                    href="{{ link['url'] }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer">
+
+                                    Open Link ↗
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+
+                        <form
+                            method="POST"
+                            action="/delete-link/{{ link['id'] }}/{{ room['room_code'] }}">
+
+                            <button
+                                type="submit"
+                                class="delete-button">
+
+                                <span>×</span>
+                                Delete
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <div class="empty-icon">↗</div>
+
+                <p>No links added yet.</p>
+
+                <small>
+                    Add useful websites or study resources.
+                </small>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- =========================================
+         FOOTER
+    ========================================== -->
+
+    <div class="room-footer">
+
+        <a href="/" class="home-button">
+            ← Back to Home
+        </a>
+
+    </div>
+
+</div>
+
+<script>
+
+    /* =========================================
+       SAVE ROOM TO RECENT ROOMS
+    ========================================== */
+
+    const STUDYDROP_ROOMS_KEY =
+        "studydrop_recent_rooms";
+
+
+    function saveCurrentRoom() {
+
+        const roomCode =
+            "{{ room['room_code'] }}";
+
+        const roomName =
+            "{{ room['room_name'] }}";
+
+        const expiresAt =
+            "{{ room['expires_at'] or '' }}";
+
+
+        let rooms = [];
+
+        try {
+
+            rooms =
+                JSON.parse(
+                    localStorage.getItem(
+                        STUDYDROP_ROOMS_KEY
+                    )
+                ) || [];
+
+        } catch (error) {
+
+            rooms = [];
+
+        }
+
+
+        /* Remove existing copy of this room */
+
+        rooms = rooms.filter(function(room) {
+
+            return room.code !== roomCode;
+
+        });
+
+
+        /* Add room at the beginning */
+
+        rooms.unshift({
+
+            code: roomCode,
+
+            name: roomName,
+
+            expiresAt: expiresAt,
+
+            savedAt: new Date().toISOString()
+
+        });
+
+
+        /* Keep only latest 10 rooms */
+
+        rooms =
+            rooms.slice(0, 10);
+
+
+        localStorage.setItem(
+
+            STUDYDROP_ROOMS_KEY,
+
+            JSON.stringify(rooms)
+
+        );
+
+    }
+
+
+    saveCurrentRoom();
+
+</script>
+
+<!-- =========================================
+     QR CODE POPUP
+========================================= -->
+
+<div id="qrModal" class="qr-modal">
+
+    <div class="qr-box">
+
+        <button
+            type="button"
+            class="qr-close"
+            onclick="closeRoomQR()">
+            ×
+        </button>
+
+        <div class="qr-header">
+
+            <div class="qr-icon">▦</div>
+
+            <h2>Scan to Join</h2>
+
+            <p>
+                Scan this QR code to open this study room.
+            </p>
+
+        </div>
+
+
+        <div id="roomQRCode" class="qr-code-container">
+        </div>
+
+
+        <div class="qr-room-info">
+
+            <small>ROOM CODE</small>
+
+            <strong>
+                {{ room["room_code"] }}
+            </strong>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="primary-button qr-close-button"
+            onclick="closeRoomQR()">
+
+            Done
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- QR CODE LIBRARY -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
+<script>
+
+    /* =========================================
+       STUDYDROP - ROOM QR
+    ========================================== */
+
+    let roomQRGenerated = false;
+
+
+    function showRoomQR() {
+
+        const modal =
+            document.getElementById("qrModal");
+
+        const qrContainer =
+            document.getElementById("roomQRCode");
+
+
+        modal.classList.add("show");
+
+
+        if (!roomQRGenerated) {
+
+            qrContainer.innerHTML = "";
+
+
+            new QRCode(qrContainer, {
+
+                text: window.location.href,
+
+                width: 220,
+
+                height: 220,
+
+                colorDark: "#172033",
+
+                colorLight: "#ffffff",
+
+                correctLevel:
+                    QRCode.CorrectLevel.H
+
+            });
+
+
+            roomQRGenerated = true;
+
+        }
+
+    }
+
+
+    function closeRoomQR() {
+
+        const modal =
+            document.getElementById("qrModal");
+
+        modal.classList.remove("show");
+
+    }
+
+
+    /* Close when clicking outside */
+
+    document.getElementById("qrModal")
+        .addEventListener(
+            "click",
+            function(event) {
+
+                if (event.target === this) {
+
+                    closeRoomQR();
+
+                }
+
+            }
+        );
+
+
+    /* Close with Escape */
+
+    document.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Escape") {
+
+                closeRoomQR();
+
+            }
+
+        }
+    );
+
+</script>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+</body>
+</html>

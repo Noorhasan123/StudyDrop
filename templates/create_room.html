@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Room - StudyDrop</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <main class="form-page">
+
+        <a href="/" class="back-link">← Back to Home</a>
+
+        <div class="form-header">
+
+            <div class="page-icon">+</div>
+
+            <p class="brand-label">STUDYDROP</p>
+
+            <h1>Create a Study Room</h1>
+
+            <p>
+                Create a temporary space to share academic resources
+                with your classmates.
+            </p>
+
+        </div>
+
+
+        <div class="main-form-card">
+
+            <form method="POST">
+
+                <div class="form-group">
+
+                    <label for="room_name">
+                        Room Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="room_name"
+                        name="room_name"
+                        placeholder="Example: CSE Notes"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="expiry">
+                        Room Expiry
+                    </label>
+
+                    <select id="expiry" name="expiry" required>
+
+                        <option value="1">1 Hour</option>
+                        <option value="6">6 Hours</option>
+                        <option value="24">24 Hours</option>
+                        <option value="0">No Expiry</option>
+
+                    </select>
+
+                    <small>
+                        Choose how long the room should remain available.
+                    </small>
+
+                </div>
+
+
+                <button type="submit" class="primary-button">
+                    Create Room <span>→</span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

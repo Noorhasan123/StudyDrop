@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Join Room - StudyDrop</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <main class="form-page">
+
+        <a href="/" class="back-link">← Back to Home</a>
+
+        <div class="form-header">
+
+            <div class="page-icon join-page-icon">↗</div>
+
+            <p class="brand-label">STUDYDROP</p>
+
+            <h1>Join Study Room</h1>
+
+            <p>
+                Enter the six-character room code shared by your classmate.
+            </p>
+
+        </div>
+
+
+        <div class="main-form-card">
+
+            <form method="POST" action="/join-room">
+
+                <div class="form-group">
+
+                    <label for="room_code">
+                        Room Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="room_code"
+                        name="room_code"
+                        placeholder="Example: BBELY1"
+                        maxlength="6"
+                        required
+                        autocomplete="off"
+                        class="room-code-input"
+                    >
+
+                    <small>
+                        Enter the code exactly as shared with you.
+                    </small>
+
+                </div>
+
+
+                <button type="submit" class="primary-button">
+                    Join Room <span>→</span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>StudyDrop</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <main class="home-container">
+
+        <section class="hero">
+
+            <div class="logo-box">SD</div>
+
+            <p class="brand-label">ACADEMIC RESOURCE SHARING</p>
+
+            <h1>Study<span>Drop</span></h1>
+
+            <p class="subtitle">
+                Temporary Academic Resource Sharing System
+            </p>
+
+            <p class="description">
+                Create a temporary room, share study resources,
+                and collaborate with your classmates without login.
+            </p>
+
+        </section>
+
+
+        <!-- =========================================
+             CREATE / JOIN
+        ========================================== -->
+
+        <section class="home-actions">
+
+            <a href="/create-room" class="action-card">
+
+                <div class="action-icon create-icon">+</div>
+
+                <div class="action-content">
+                    <h2>Create Room</h2>
+                    <p>Create a new study room and share the unique code.</p>
+                </div>
+
+                <div class="card-arrow">→</div>
+
+            </a>
+
+
+            <a href="/join-room" class="action-card">
+
+                <div class="action-icon join-icon">↗</div>
+
+                <div class="action-content">
+                    <h2>Join Room</h2>
+                    <p>Enter a room code to access shared resources.</p>
+                </div>
+
+                <div class="card-arrow">→</div>
+
+            </a>
+
+        </section>
+
+
+        <!-- =========================================
+             RECENT ROOMS
+        ========================================== -->
+
+        <section class="recent-rooms-section" id="recentRoomsSection">
+
+            <div class="recent-rooms-header">
+
+                <div>
+                    <p class="brand-label">QUICK ACCESS</p>
+                    <h2>My Recent Rooms</h2>
+                    <p>
+                        Open rooms you've recently created or joined.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="clear-rooms-button"
+                    id="clearRoomsButton">
+
+                    Clear All
+
+                </button>
+
+            </div>
+
+
+            <div id="recentRoomsList" class="recent-rooms-list">
+                <!-- Rooms will be inserted here -->
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
+             FEATURES
+        ========================================== -->
+
+        <section class="features">
+
+            <div class="feature">
+                <div class="feature-icon">▣</div>
+                <h3>Share Files</h3>
+                <p>Share PDFs, PPTs, images and other study resources.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">≡</div>
+                <h3>Share Notes</h3>
+                <p>Keep important notes available for everyone.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">↗</div>
+                <h3>Share Links</h3>
+                <p>Keep useful study websites together in one place.</p>
+            </div>
+
+        </section>
+
+
+        <footer>
+            <p>StudyDrop · Made for students</p>
+        </footer>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    /* =========================================
+       STUDYDROP - RECENT ROOMS
+    ========================================== */
+
+    const STORAGE_KEY = "studydrop_recent_rooms";
+
+
+    function getRecentRooms() {
+
+        try {
+
+            return JSON.parse(
+                localStorage.getItem(STORAGE_KEY)
+            ) || [];
+
+        } catch (error) {
+
+            return [];
+
+        }
+
+    }
+
+
+    function saveRecentRooms(rooms) {
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(rooms)
+        );
+
+    }
+
+
+    function removeRoom(roomCode) {
+
+        let rooms = getRecentRooms();
+
+        rooms = rooms.filter(function(room) {
+
+            return room.code !== roomCode;
+
+        });
+
+        saveRecentRooms(rooms);
+
+        renderRecentRooms();
+
+    }
+
+
+    function renderRecentRooms() {
+
+        const section =
+            document.getElementById("recentRoomsSection");
+
+        const list =
+            document.getElementById("recentRoomsList");
+
+        if (!section || !list) {
+            return;
+        }
+
+
+        let rooms = getRecentRooms();
+
+        const now = Date.now();
+
+
+        /* Remove rooms that have expired */
+
+        rooms = rooms.filter(function(room) {
+
+            if (!room.expiresAt) {
+                return true;
+            }
+
+            return new Date(room.expiresAt).getTime() > now;
+
+        });
+
+
+        saveRecentRooms(rooms);
+
+
+        if (rooms.length === 0) {
+
+            section.style.display = "none";
+
+            return;
+
+        }
+
+
+        section.style.display = "block";
+
+        list.innerHTML = "";
+
+
+        rooms.forEach(function(room) {
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "recent-room-card";
+
+
+            const info =
+                document.createElement("div");
+
+            info.className =
+                "recent-room-info";
+
+
+            const icon =
+                document.createElement("div");
+
+            icon.className =
+                "recent-room-icon";
+
+            icon.textContent =
+                "⌂";
+
+
+            const details =
+                document.createElement("div");
+
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent =
+                room.name;
+
+
+            const code =
+                document.createElement("small");
+
+            code.textContent =
+                "Code: " + room.code;
+
+
+            details.appendChild(title);
+            details.appendChild(code);
+
+
+            info.appendChild(icon);
+            info.appendChild(details);
+
+
+            const actions =
+                document.createElement("div");
+
+            actions.className =
+                "recent-room-actions";
+
+
+            const openButton =
+                document.createElement("a");
+
+            openButton.href =
+                "/room/" + encodeURIComponent(room.code);
+
+            openButton.className =
+                "recent-open-button";
+
+            openButton.textContent =
+                "Open →";
+
+
+            const deleteButton =
+                document.createElement("button");
+
+            deleteButton.type =
+                "button";
+
+            deleteButton.className =
+                "recent-delete-button";
+
+            deleteButton.textContent =
+                "×";
+
+            deleteButton.title =
+                "Remove from recent rooms";
+
+
+            deleteButton.addEventListener(
+                "click",
+                function() {
+
+                    removeRoom(room.code);
+
+                }
+            );
+
+
+            actions.appendChild(openButton);
+            actions.appendChild(deleteButton);
+
+
+            card.appendChild(info);
+            card.appendChild(actions);
+
+
+            list.appendChild(card);
+
+        });
+
+    }
+
+
+    const clearRoomsButton =
+        document.getElementById("clearRoomsButton");
+
+
+    if (clearRoomsButton) {
+
+        clearRoomsButton.addEventListener(
+            "click",
+            function() {
+
+                localStorage.removeItem(
+                    STORAGE_KEY
+                );
+
+                renderRecentRooms();
+
+            }
+        );
+
+    }
+
+
+    renderRecentRooms();
+
+</script>
+
+
+</body>
+</html>
